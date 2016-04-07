@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Drew Fleeman - Web Developer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  </head>
+  <style>
+    body {
+    font-family: "PT Sans", sans-serif;
+    background: #fcfcfa;
+    text-align: center;
+    margin-bottom: 80px;
+    }
+
+    .social {
+    margin-top: 20px;
+    font-size: 42px;
+    }
+
+    .social-text {
+    margin-left: 10px;
+    font-size: 18px;
+    }
+
+    a i {
+    color: #333;
+    text-decoration: none;
+    }
+
+    .fa:hover {
+    color: #337ab7;
+    }
+
+    .row {
+    margin-bottom: 40px;
+    font-size: 24px;
+    }
+
+    .projects, .project-titles {
+    border-bottom: 2px solid #eeeeee;
+    }
+
+    .project-desc {
+    font-size: 16px;
+    margin-top: 30px;
+    }
+
+    .jumbotron {
+    min-height: 555px;
+    }
+
+    .code-links {
+    font-size: 16px;
+    margin-bottom: 20px;
+    }
+
+    .info-head {
+    margin-bottom: 40px;
+    margin-top: 80px;
+    border-bottom: 2px solid #eeeeee;
+    }
+
+    .navbar-collapse.collapse {
+    display: block!important;
+    }
+
+    .navbar-nav>li, .navbar-nav {
+    float: left!important;
+    }
+
+    .navbar-nav.navbar-right:last-child {
+    margin-right: -15px !important;
+    }
+
+    .navbar-right {
+    float: right!important;
+    }
+  </style>
+  <body>
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#social">Social</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+    <div class="info-head">
+    <h1>Drew Fleeman</h1>
+    <h2 class="text-primary">Web Developer</h2>
+    </div>
+    <div class="projects" id="projects">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="jumbotron">
+          <div class="project-titles">
+            Project Skeleton
+          </div>
+          <div class="code-links">
+            <a href="http://www.projectskeleton.com/" target='_blank'>live link</a> -
+            <a href="https://github.com/fleemaja/skeleton" target='_blank'>github repo</a>
+          </div>
+          <img class="img-responsive" src="http://res.cloudinary.com/dkw0kkkgd/image/upload/v1459997746/project_skeleton_xtnlji.png">
+          <div class="project-desc">
+          Project Skeleton is a reddit-inspired web forum dedicated to sparking creativity through user submitted project ‘prompts’ (e.g. drawing prompts, photoshop contests, & cooking challenges). Built with Ruby on Rails and Backbone.js.
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="jumbotron">
+          <div class="project-titles">Drunken Snake</div>
+          <div class="code-links">
+            <a href="http://htmlpreview.github.io/?https://github.com/fleemaja/js_snake/blob/master/html/snake.html" target='_blank'>live link</a> -
+            <a href="https://github.com/fleemaja/js_snake" target='_blank'>github repo</a>
+          </div>
+          <img class="img-responsive" src="http://res.cloudinary.com/dkw0kkkgd/image/upload/v1459998004/drunken_snake_jccixt.png">
+          <div class="project-desc">
+            Browser-based spin on the addicting video game Snake. Eating different objects causes the snake to behave in strange ways (e.g. coffee = hyper snake, beer = dizzy snake). Built with Javascript, HTML, and CSS.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="jumbotron">
+          <div class="project-titles">
+            Ruby Chess
+          </div>
+          <div class="code-links">
+            <a href="https://github.com/fleemaja/ruby_chess" target='_blank'>github repo</a>
+          </div>
+          <img class="img-responsive" src="https://raw.githubusercontent.com/fleemaja/ruby_chess/master/images/chess.png">
+          <div class="project-desc">
+            Chess game that is 100% Ruby and played in the terminal. Includes advanced movements like castling, en passant, and pawn promotion.
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="jumbotron">
+          <div class="project-titles">
+            Flashcards!
+          </div>
+          <div class="code-links">
+            <a href="http://fleemaja.github.io/flashcards.html" target='_blank'>live link</a> -
+            <a href="https://github.com/fleemaja/flashcards_game" target='_blank'>github repo</a>
+          </div>
+          <img class="img-responsive" src="https://raw.githubusercontent.com/fleemaja/flashcards_game/master/images/gameplay.png">
+          <div class="project-desc">
+            Flashcards! is a game that allows you to pick a "pack" of flashcards and see how many answers you can get correct on that topic in one minute. Built with React.js components.
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="social" id="social">
+    <div>
+      <i class="fa fa-envelope"></i><span class="social-text">drew.fleeman@gmail.com</span>
+    </div>
+    <div>
+      <a href="https://www.linkedin.com/in/drew-fleeman-a34815b2" target='_blank'><i class="fa fa-linkedin"></i><span class="social-text">LinkedIn Profile</span></a>
+    </div>
+    <div>
+      <a href="https://github.com/fleemaja" target='_blank'>
+        <i class="fa fa-github"></i><span class="social-text">Github Profile</span></a>
+    </div>
+    </div>
+    </div>
+  </body>
+</html>

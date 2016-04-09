@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Quote Generator</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <style media="screen">
+      body {
+      margin: 5%;
+      }
+
+      .fa {
+      font-size: 24px;
+      }
+
+      .fa-quote-right {
+      float: right;
+      }
+
+      .jumbotron {
+      padding: 10px;
+      max-width: 900px;
+      margin: 0 auto;
+      }
+      .img-responsive {
+      border-radius: 50%;
+      height: 193px;
+      width: 210px;
+      border: 5px solid white;
+      margin-left: 5%;
+      }
+
+      .img-responsive:hover {
+      cursor: pointer;
+      }
+
+      h1#quote {
+      font-size: 28px;
+      background-color: white;
+      border-radius: 25px;
+      padding: 20px;
+      }
+      h2#author {
+      font-size: 24px;
+      display: inline-block;
+      float: right;
+      background-color: white;
+      border-radius: 25px;
+      padding: 20px;
+      margin: 40px 20px 0 0;
+      }
+
+      button {
+      float: right;
+      margin-right: 40px;
+      }
+
+      .buttons {
+        max-width: 900px;
+        margin: 20px auto;
+      }
+
+      .fa-twitter {
+      font-size: 42px;
+      margin-left: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="jumbotron">
+        <div>
+          <i class="fa fa-quote-left"></i>
+          <h1 id="quote"></h1>
+          <i class="fa fa-quote-right"></i>
+          <h2 id="author"></h2>
+        </div>
+          <img class="img-responsive" src="http://res.cloudinary.com/dkw0kkkgd/image/upload/v1460160482/yoda.jpg_o9qbxc.jpg" alt="Yoda">
+      </div>
+      <div class="buttons">
+        <a id="tweet" href="#" target="_blank"><i class="fa fa-twitter"></i></a>
+        <button class="btn-lg btn-primary">New Quote</button>
+      </div>
+    </div>
+
+    <script>
+      var yodafy = function(quote) {
+        $.ajax({
+                url: 'https://yoda.p.mashape.com/yoda',
+                type: 'GET',
+                data: { sentence: quote},
+                datatype: 'json',
+                success: function (data) {
+                    $('h1').html(data);
+                },
+                error: function (err) {
+                    alert(err);
+                },
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("X-Mashape-Authorization", "N4TkiSJqO9mshhdZLgM1Y57pH9g3p11unhHjsnOhh8eXPsXwNI");
+                }
+            });
+        }
+      var getQuote = function() {
+        $.ajax({
+          url: 'https://andruxnet-random-famous-quotes.p.mashape.com/?cat=movies',
+          type: 'POST',
+          data: {},
+          dataType: 'json',
+          success: function(data) {
+            $("h1").html(data.quote);
+            $("h2").html("- " + data.author);
+          },
+          error: function(err) { alert(err); },
+          beforeSend: function(xhr) {
+          xhr.setRequestHeader("X-Mashape-Authorization", "N4TkiSJqO9mshhdZLgM1Y57pH9g3p11unhHjsnOhh8eXPsXwNI");
+          }
+        });
+      };
+
+      $("document").ready(function() {
+        getQuote();
+      });
+
+      $('button').on("click", function() {
+        getQuote();
+      });
+
+      $('img').on("click", function() {
+        var quote = document.getElementById("quote").textContent;
+        yodafy(quote);
+      });
+
+      $("a").on("click", function() {
+        var quote = document.getElementById("quote").textContent;
+        $("a").attr("href", "http://twitter.com/home?status=" + encodeURIComponent(quote));
+      });
+    </script>
+  </body>
+</html>

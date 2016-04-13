@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Twitch Streamer Status</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+    .container {
+    max-width: 900px;
+    }
+
+    .title {
+    font-size: 32px;
+    background-color: #F60;
+    font-family: 'Futura';
+    margin-top: 40px;
+    padding: 5px 0 5px 10px;
+    text-align: center;
+    }
+
+    .img-logo {
+    width: 80px;
+    }
+
+    td {
+    padding: 20px;
+    }
+
+    .text-primary {
+    font-size: 18px;
+    }
+
+    .online-pulse {
+      border: 3px solid #999;
+      -webkit-border-radius: 30px;
+      height: 24px;
+      width: 24px;
+      -webkit-animation: pulsate 1.3s ease-out;
+      -webkit-animation-iteration-count: infinite;
+      opacity: 0.0
+    }
+    @-webkit-keyframes pulsate {
+      0% {-webkit-transform: scale(0.1, 0.1); opacity: 0.3;}
+      50% {opacity: 1.0;}
+      100% {-webkit-transform: scale(1.2, 1.2); opacity: 0.3;}
+    }
+
+    .sections {
+    padding-top: 40px;
+    border-bottom: 1px solid gray;
+    }
+
+    table {
+    margin: 0 auto;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="title">Twitch Streamers</div>
+      <table>
+        <tbody class="online-streamers">
+          <th colspan="3" class="sections">Online</th>
+        </tbody>
+        <tbody class="offline-streamers">
+          <th colspan="3" class="sections">Offline</th>
+        </tbody>
+        <tbody class="closed-streamers">
+          <th colspan="3" class="sections">Closed Accounts</th>
+        </tbody>
+      </table>
+    </div>
+  </body>
+
+  <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+  <script>
+    function addOnlineStreamers(logoURL, displayName, game, status) {
+      $('.online-streamers').append("<tr>");
+      $('.online-streamers').append('<td><img class="img-logo" src="' + logoURL + '"></td>');
+      $('.online-streamers').append('<td><a target="_blank" href="http://www.twitch.tv/' + displayName.toLowerCase() + '"<span class="text-primary">' + displayName + '</span></a><p>' + game + '</p><p>' + status + '</p></td>');
+      $('.online-streamers').append('<td><div class="online-pulse"></div></td>');
+      $('.online-streamers').append('</tr>');
+    }
+
+    function addOfflineStreamers(logoURL, displayName) {
+      $('.offline-streamers').append("<tr>");
+      $('.offline-streamers').append('<td><img class="img-logo" src="' + logoURL + '"></td>');
+      $('.offline-streamers').append('<td><a target="_blank" href="http://www.twitch.tv/' + displayName.toLowerCase() + '"<span class="text-primary">' + displayName + '</span></a><p>Offline</p></td>');
+      $('.offline-streamers').append('</tr>');
+    }
+
+    function addClosedStreamers(logoURL, displayName) {
+      $('.closed-streamers').append("<tr>");
+      $('.closed-streamers').append('<td><img class="img-logo" src="' + logoURL + '"></td>');
+      $('.closed-streamers').append('<td><a target="_blank" href="http://www.twitch.tv/' + displayName.toLowerCase() + '"<span class="text-primary">' + displayName + '</span></a><p>Account Closed</p></td>');
+      $('.closed-streamers').append('</tr>');
+    }
+
+    STREAMERS = [
+    'FreeCodeCamp',
+    'cretetion',
+    'Beohoff',
+    'Habathcx',
+    'sheevergaming',
+    'OgamingSC2',
+    'terakilobyte',
+    'thomasballinger',
+    'comster404',
+    'brunofin',
+    'RobotCaleb',
+    'Test_channel',
+    'TR7K',
+    'noobs2ninjas',
+    'ESL_SC2',
+    'storbeck'
+    ];
+
+    $.each(STREAMERS, function(i, val) {
+      var stream = 'https://api.twitch.tv/kraken/streams/' + val + '?callback=?';
+      var channel = 'https://api.twitch.tv/kraken/channels/' + val + '?callback=?';
+
+      $.getJSON(channel, function(json) {
+        var logoURL;
+        if (json['logo']) {
+          logoURL = json['logo'];
+        } else {
+          logoURL = 'http://dummyimage.com/50x50/ecf0e7/5c5457.jpg&text=0x3F';
+        }
+        if (json['display_name'] !== undefined) {
+          var displayName = json['display_name'];
+          var accountClosed = false;
+        } else {
+          var displayName = val;
+          var accountClosed = true;
+        }
+        var streamStatus;
+        var game = json['game'];
+        var status = json['status'];
+        $.getJSON(stream, function(json) {
+          if (json['stream']) {
+            streamStatus = "online";
+          } else {
+            streamStatus = "offline";
+          };
+          if (!accountClosed && streamStatus === "online") {
+            addOnlineStreamers(logoURL, displayName, game, status);
+          } else if (!accountClosed && streamStatus !== "online") {
+            addOfflineStreamers(logoURL, displayName);
+          } else {
+            addClosedStreamers(logoURL, displayName);
+          }
+        });
+      });
+    });
+  </script>
+</html>

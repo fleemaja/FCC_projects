@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style media="screen">
+      body {
+      background-color: #303030;
+      font-family: 'Futura';
+      font-size: 48px;
+      }
+
+      .table {
+      font-size: 42px;
+      text-align: center;
+      max-width: 400px;
+      margin: 0 auto;
+      margin-top: 5%;
+      color: white;
+      border: 10px solid white;
+      background-color: #A8A8A8;
+      table-layout: fixed;
+      }
+
+      td:hover {
+      cursor: pointer;
+      }
+
+      tr:nth-child(1) {
+      background-color: #303030;
+      }
+
+      tr:nth-child(5) {
+      background-color: gray;
+      }
+
+      td:nth-child(4) {
+      background-color: #f2b179;
+      }
+
+      tr:nth-child(5) td:nth-child(2) {
+      background-color: #A8A8A8;
+      }
+
+      th {
+      background-color: #D3D3D3;
+      color: gray;
+      height: 80px;
+      text-align: right;
+      overflow: scroll;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <table class="table table-bordered table-responsive">
+        <th colspan="4"></th>
+        <tr>
+          <td onClick="appendVal('7')">7</td>
+          <td onClick="appendVal('8')">8</td>
+          <td onClick="appendVal('9')">9</td>
+          <td onClick="appendVal(' * ')">*</td>
+        </tr>
+        <tr>
+          <td onClick="appendVal('4')">4</td>
+          <td onClick="appendVal('5')">5</td>
+          <td onClick="appendVal('6')">6</td>
+          <td onClick="appendVal(' - ')">-</td>
+        </tr>
+        <tr>
+          <td onClick="appendVal('1')">1</td>
+          <td onClick="appendVal('2')">2</td>
+          <td onClick="appendVal('3')">3</td>
+          <td onClick="appendVal(' + ')">+</td>
+        </tr>
+        <tr>
+          <td onClick="clearInput()">C</td>
+          <td onClick="appendVal('0')">0</td>
+          <td onClick="evaluateInput()">=</td>
+          <td onClick="appendVal(' / ')">/</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+
+  <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+  <script>
+    JUST_EVALUATED = false;
+
+    function appendVal(char) {
+      var operators = [' + ', ' - ', ' / ', ' * '];
+      if (operators.indexOf(char) === -1 && JUST_EVALUATED) {
+        clearInput();
+      }
+      $('th').append(char);
+      JUST_EVALUATED = false;
+    }
+
+    function clearInput() {
+      $('th').html("");
+    }
+
+    function evaluateInput() {
+      var input = $('th').text();
+      $('th').html(eval(input));
+      JUST_EVALUATED = true;
+    }
+  </script>
+</html>

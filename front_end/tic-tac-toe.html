@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Tic-Tac-Toe</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+      body {
+        background-color: #161616;
+        color: white;
+        font-family: 'Futura';
+      }
+
+      .table {
+        font-size: 70px;
+        max-width: 390px;
+        text-align: center;
+        margin: 0 auto;
+        margin-top: 5%;
+        border: none;
+      }
+
+      td:nth-child(2) {
+        border-left: 10px solid #ADD8E6;
+        border-right: 10px solid #ADD8E6;
+      }
+
+      tr:nth-child(2) {
+        border-top: 10px solid #ADD8E6;
+      }
+
+      tr:nth-child(3) {
+        border-top: 10px solid #ADD8E6;
+      }
+
+      tr:nth-child(1) td {
+        border-top: none !important;
+      }
+
+      td {
+        min-width: 127px;
+        height: 127px;
+      }
+
+      td:hover {
+        cursor: pointer;
+      }
+
+      #replay {
+        display: none;
+        color: black;
+      }
+
+      #message, #replay {
+        text-align: center;
+      }
+
+      .btn {
+        background-color: #ADD8E6;
+        font-size: 32px;
+        margin: 5px;
+      }
+
+      .btn:hover {
+        opacity: 0.8;
+      }
+
+      /* The Modal (background) */
+      .modal {
+        display: block; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        font-size: 32px;
+        text-align: center;
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      /* Modal Content/Box */
+      .modal-content {
+        background-color: #fefefe;
+        color: #161616;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%; /* Could be more or less, depending on screen size */
+      }
+
+      @media(max-width: 420px) {
+        .modal-content {
+          width: 80%;
+        }
+
+        td {
+          min-width: 90px;
+          height: 90px;
+        }
+
+        .table {
+          font-size: 50px;
+          max-width: 270px;
+          margin-top: 20%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+    TODO:
+    basic computer ai - not unbeatable, but always go for the obvious immediately winnable and loseable spots
+    -->
+
+    <div class="container">
+
+      <!-- The Modal -->
+      <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+          <p>Play as 'X' or 'O'?</p>
+          <button class="btn X">X</button>
+          <button class="btn O">O</button>
+        </div>
+
+      </div>
+
+      <table class="table">
+        <tr>
+          <td id="00">
+          </td>
+          <td id="01">
+          </td>
+          <td id="02">
+          </td>
+        </tr>
+        <tr>
+          <td id="10">
+          </td>
+          <td id="11">
+          </td>
+          <td id="12">
+          </td>
+        </tr>
+        <tr>
+          <td id="20">
+          </td>
+          <td id="21">
+          </td>
+          <td id="22">
+          </td>
+        </tr>
+      </table>
+
+      <div id="message">
+      </div>
+
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+
+    <script>
+      CLICK = true;
+
+      function checkRow(row) {
+        var rowCheck = ($('#' + row + '0').text() === $('#' + row + '1').text() &&
+        $('#' + row + '1').text() === $('#' + row + '2').text() &&
+        ($('#' + row + '0').text() === "X" || $('#' + row + '0').text() === "O"));
+
+        if (rowCheck) {
+          $('#' + row + '0').css("color", "#faff45");
+          $('#' + row + '1').css("color", "#faff45");
+          $('#' + row + '2').css("color", "#faff45");
+          $('#' + row + '0').css("background-color", "#303030");
+          $('#' + row + '1').css("background-color", "#303030");
+          $('#' + row + '2').css("background-color", "#303030");
+        }
+
+        return rowCheck;
+      }
+
+      function checkRows() {
+        return (checkRow(0) || checkRow(1) || checkRow(2));
+      }
+
+      function checkColumn(col) {
+        var colCheck = ($('#0' + col).text() === $('#1' + col).text() &&
+        $('#1' + col).text() === $('#2' + col).text() &&
+        ($('#0' + col).text() === "X" || $('#0' + col).text() === "O" ));
+
+        if (colCheck) {
+          $('#0' + col).css("color", "#faff45");
+          $('#1' + col).css("color", "#faff45");
+          $('#2' + col).css("color", "#faff45");
+          $('#0' + col).css("background-color", "#303030");
+          $('#1' + col).css("background-color", "#303030");
+          $('#2' + col).css("background-color", "#303030");
+        }
+
+        return colCheck;
+      }
+
+      function checkColumns() {
+        return (checkColumn(0) || checkColumn(1) || checkColumn(2));
+      }
+
+      function checkDownDiagonal() {
+        var downCheck = ($('#00').text() === $('#11').text() &&
+        $('#11').text() === $('#22').text() &&
+        ($('#00').text() === "X" || $('#00').text() === "O"));
+
+        if (downCheck) {
+          $('#00').css("color", "#faff45");
+          $('#11').css("color", "#faff45");
+          $('#22').css("color", "#faff45");
+          $('#00').css("background-color", "#303030");
+          $('#11').css("background-color", "#303030");
+          $('#22').css("background-color", "#303030");
+        }
+
+        return downCheck;
+      }
+
+      function checkUpDiagonal() {
+        var upCheck = ($('#20').text() === $('#11').text() &&
+        $('#11').text() === $('#02').text() &&
+        ($('#20').text() === "X" || $('#20').text() === "O"));
+
+        if (upCheck) {
+          $('#20').css("color", "#faff45");
+          $('#11').css("color", "#faff45");
+          $('#02').css("color", "#faff45");
+          $('#20').css("background-color", "#303030");
+          $('#11').css("background-color", "#303030");
+          $('#02').css("background-color", "#303030");
+        }
+
+        return upCheck;
+      }
+
+      function checkDiagonals() {
+        return (checkDownDiagonal() || checkUpDiagonal());
+      }
+
+      function isWon() {
+        return (checkRows() || checkColumns() || checkDiagonals());
+      }
+
+      function isDraw() {
+        for (var i = 0; i < 3; i++) {
+          for (var j = 0; j < 3; j++) {
+            if ($('#' + i + j).text() !== "X" && $('#' + i + j).text() !== "O") {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      function replay() {
+        CLICK = true;
+        $('#message').html('');
+        $('td').css("cursor", "pointer");
+        for (var i = 0; i < 3; i++) {
+          for (var j = 0; j < 3; j++) {
+            $('#' + i + j).html("");
+            $('#' + i + j).css("color", "white");
+            $('#' + i + j).css("background-color", "inherit");
+          }
+        }
+        randomComputerMove();
+      };
+
+      function randomComputerMove() {
+        var foundMove = false;
+        while (!foundMove) {
+          var randRow = Math.floor(Math.random() * 3);
+          var randCol = Math.floor(Math.random() * 3);
+          if ($('#' + randRow + randCol).text() !== "X" && $('#' + randRow + randCol).text() !== "O") {
+            $('#' + randRow + randCol).html(XO);
+            $('#' + randRow + randCol).css("cursor", "inherit");
+            foundMove = true;
+          }
+        }
+        if (isWon()) {
+          $('#message').html('<h1>' + XO + ' Wins!</h1>');
+          setTimeout(function() { replay(); }, 3000);
+          $('td').css("cursor", "not-allowed");
+          CLICK = false;
+        } else if (isDraw()) {
+          $('#message').html('<h1>It\'s a Draw!</h1>');
+          setTimeout(function() { replay(); }, 3000);
+          $('td').css("cursor", "not-allowed");
+          CLICK = false;
+        }
+        if (XO === "X") {
+          XO = "O";
+        } else {
+          XO = "X";
+        }
+      }
+
+      var modal = document.getElementById('myModal');
+
+      $('.X').on("click", function() {
+        modal.style.display = "none";
+        XO = "O";
+        COMP = "O";
+        randomComputerMove();
+      });
+
+      $('.O').on("click", function() {
+        modal.style.display = "none";
+        XO = "X";
+        COMP = "X";
+        randomComputerMove();
+      });
+
+
+      $('td').on("click", function(e) {
+        if (CLICK) {
+          var el = e.currentTarget;
+          if ($(el).text() !== "X" && $(el).text() !== "O") {
+            $(el).html(XO);
+            $(el).css("cursor", "inherit");
+            if (isWon()) {
+              $('#message').html('<h1>' + XO + ' Wins!</h1>');
+              setTimeout(function() {
+                replay();
+              }, 3000);
+              $('td').css("cursor", "not-allowed");
+              CLICK = false;
+            } else if (isDraw()) {
+              $('#message').html('<h1>It\'s a Draw!</h1>');
+              setTimeout(function() {
+                replay();
+              }, 3000);
+              CLICK = false;
+              $('td').css("cursor", "not-allowed");
+            } else {
+              if (XO === "X") {
+                XO = "O";
+              } else {
+                XO = "X";
+              }
+              randomComputerMove();
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

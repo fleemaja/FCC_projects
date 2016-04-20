@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Simon</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+      body {
+        background-image: url("http://cdn.backgroundhost.com/backgrounds/subtlepatterns/retina_wood.png");
+        text-align: center;
+        font-family: 'Futura';
+        color: #3c3c3c;
+      }
+
+      .container {
+        font-size: 18px;
+        background-color: white;
+        max-width: 380px;
+        margin-top: 3%;
+        border-radius: 25px;
+        box-shadow: 15px 15px 7px #303030;
+        -moz-box-shadow: 10px 10px 7px #303030;
+        -webkit-box-shadow: 15px 15px 7px #303030;
+      }
+
+      .count {
+        background-color: #CACACA;
+        border-radius: 25px;
+        padding: 5px 13px 5px 13px;
+      }
+
+      .simon {
+        font-size: 42px;
+      }
+
+      #simon-img {
+        height: 42px;
+        margin-bottom: 10px;
+      }
+
+      .start {
+        border-radius: 50%;
+        font-size: 28px;
+        height: 60px;
+        margin: 0 20px;
+        color: white;
+        box-shadow: 5px 2px 2px #303030;
+        -moz-box-shadow: 2px 2px 2px #303030;
+        -webkit-box-shadow: 2px 2px 2px #303030;
+        margin-bottom: 10px;
+      }
+
+      .btn:focus { outline: none; }
+
+      .col-xs-5 {
+        /*   border: 10px solid white; */
+        height: 140px;
+        cursor: pointer;
+        border-radius: 25px;
+        margin-bottom: 20px;
+        box-shadow: 5px 5px 2px #303030;
+        -moz-box-shadow: 5px 5px 2px #303030;
+        -webkit-box-shadow: 5px 5px 5px #303030;
+      }
+
+      #green {
+        background-color: #66FF66;
+      }
+
+      #red {
+        margin: 0 20px;
+        background-color: #FF6666;
+      }
+
+      #yellow {
+        background-color: #FFFF66;
+        margin: 0 20px;
+      }
+
+      #blue {
+        background-color: #6666FF;
+      }
+
+      /* The Modal (background) */
+      .modal {
+        display: hidden; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        font-size: 32px;
+        text-align: center;
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      /* Modal Content/Box */
+      .modal-content {
+        background-color: #fefefe;
+        color: #161616;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%; /* Could be more or less, depending on screen size */
+      }
+
+      /* .roundedTwo */
+      .roundedTwo {
+        width: 20px;
+        height: 20px;
+        position: relative;
+        margin: 20px auto;
+        background: #fcfff4;
+        background: -webkit-linear-gradient(top, #fcfff4 0%, #dfe5d7 40%, #b3bead 100%);
+        background: linear-gradient(to bottom, #fcfff4 0%, #dfe5d7 40%, #b3bead 100%);
+        border-radius: 50px;
+        box-shadow: inset 1px 1px 1px white, 3px 3px 3px rgba(0, 0, 0, 0.1);
+        display: inline;
+      }
+      .roundedTwo label {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        cursor: pointer;
+        background: -webkit-linear-gradient(top, #CACACA 0%, #45484d 100%);
+        background: linear-gradient(to bottom, #CACACA 0%, #45484d 100%);
+        border-radius: 50px;
+        box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.5), 1px 1px 0px white;
+      }
+      .roundedTwo label:after {
+        content: '';
+        width: 13px;
+        height: 7px;
+        position: absolute;
+        top: 5px;
+        left: 4px;
+        border: 3px solid #fcfff4;
+        border-top: none;
+        border-right: none;
+        background: transparent;
+        opacity: 0;
+        -webkit-transform: rotate(-45deg);
+                transform: rotate(-45deg);
+      }
+      .roundedTwo label:hover::after {
+        opacity: 0.3;
+      }
+      .roundedTwo input[type=checkbox] {
+        visibility: hidden;
+      }
+      .roundedTwo input[type=checkbox]:checked + label:after {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <div id="myModal" class="modal">
+        <div class="modal-content">
+          <p>20 in a Row!</p>
+          <p>Congratulations! You Win!</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <p class="simon">
+          <img id="simon-img" src="http://www.virtual-pet-game.com/images/Games/Simon/Simon.svg">
+          Simon
+        </p>
+        <label class="checkbox-inline">Strict</label>
+        <div class="roundedTwo">
+          <input type="checkbox" value="None" id="strict" name="check" />
+          <label for="strict"></label>
+        </div>
+        <button class="btn start">Start</button>
+        <span>Count: <span class="count">--</span></span>
+      </div>
+      <div class="row">
+        <div class="col-xs-5" id="red">
+        </div>
+        <div class="col-xs-5" id="green">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-5" id="yellow">
+        </div>
+        <div class="col-xs-5" id="blue">
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+
+    <script>
+      COUNT = 1;
+      SOUNDS = {
+      'red': 'https://s3.amazonaws.com/freecodecamp/simonSound1.mp3',
+      'yellow': 'https://s3.amazonaws.com/freecodecamp/simonSound2.mp3',
+      'blue': 'https://s3.amazonaws.com/freecodecamp/simonSound3.mp3',
+      'green': 'https://s3.amazonaws.com/freecodecamp/simonSound4.mp3'
+      };
+      USER_TURN = false;
+      SEQUENCE = [];
+      USER_COUNT = 0;
+      TIMEOUTS = [];
+
+      $('.start').on("click", function() {
+        USER_TURN = false;
+        SEQUENCE = [];
+        USER_COUNT = 0;
+        COUNT = 1;
+        $('.col-xs-5').css("opacity", 1);
+        for (var i = 0; i < TIMEOUTS.length; i++) {
+          clearTimeout(TIMEOUTS[i]);
+        }
+        $('.count').html(COUNT);
+        var addNew = true;
+        playComputerSequence(addNew);
+      });
+
+      function playComputerSequence(addNew) {
+        USER_TURN = false;
+        if (addNew) {
+          var newSquare = randomSquare();
+          SEQUENCE.push(newSquare);
+        }
+        var offset = 0;
+        SEQUENCE.forEach(function(sq) {
+          TIMEOUTS.push(setTimeout(function() {
+            playSquare(sq);
+          }, 1000 + offset));
+          offset += 1000;
+        });
+        TIMEOUTS.push(setTimeout(function() {
+          USER_TURN = true;
+          USER_COUNT = 0;
+        }, offset));
+      }
+
+      function humanTurn(square) {
+        playSquare(square);
+        if (square === SEQUENCE[USER_COUNT]) {
+          USER_COUNT += 1;
+          if (USER_COUNT === 20) {
+            var modal = document.getElementById('myModal');
+            modal.style.display = "block";
+            setTimeout(function() {
+              modal.style.display = "none";
+              COUNT = 1;
+              SEQUENCE = [];
+              var addNew = true;
+              $('.count').html(COUNT);
+              playComputerSequence(addNew);
+            }, 5000);
+          } else if (USER_COUNT === COUNT) {
+            COUNT += 1;
+            $('.count').html(COUNT);
+            var addNew = true;
+            playComputerSequence(addNew);
+          }
+        } else {
+          var wrong = 'http://www.orangefreesounds.com/wp-content/uploads/2014/08/Wrong-answer-sound-effect.mp3?_=1';
+          var audio = new Audio(wrong);
+          audio.play();
+          $('.count').html("!!");
+          if ($('input#strict').is(':checked')) {
+            var addNew = true;
+            COUNT = 1;
+            SEQUENCE= [];
+          } else {
+            var addNew = false;
+          }
+          TIMEOUTS.push(setTimeout(function() {
+            playComputerSequence(addNew);
+            $('.count').html(COUNT);
+          }, 2000));
+        }
+      }
+
+      $('.col-xs-5').on("click", function(e) {
+        if (USER_TURN && USER_COUNT < COUNT) {
+          var square = e.currentTarget.id;
+          humanTurn(square);
+        }
+      });
+
+      function randomSquare() {
+        var squares = ['red', 'blue', 'yellow', 'green'];
+        return squares[Math.floor(Math.random() * squares.length)];
+      }
+
+      function playSquare(square) {
+        playAudio(square);
+        $('#' + square).css('opacity', 0.5);
+        TIMEOUTS.push(setTimeout(function() {
+          $('#' + square).css('opacity', 1);
+        }, 500));
+      }
+
+      function playAudio(color) {
+        var sound = SOUNDS[color];
+        var audio = new Audio(sound);
+        audio.play();
+      }
+    </script>
+  </body>
+</html>

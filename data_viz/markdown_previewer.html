@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Markdown Previewer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+      /* Compiled from SCSS */
+      #main {
+        font-family: 'Futura';
+      }
+      #main .container {
+        background-color: #F2B179;
+        margin-top: 3%;
+        border-radius: 25px;
+        padding: 5px 10px 40px 10px;
+      }
+      #main .container .page-title {
+        text-align: center;
+        font-size: 32px;
+        margin-bottom: 20px;
+      }
+      #main .container .label {
+        font-size: 16px;
+      }
+      #main .container #output-label {
+        color: #F1F1F1;
+      }
+      #main .container .output {
+        background-color: #F1F1F1;
+        min-height: 454px;
+        border-radius: 25px;
+        padding: 20px;
+      }
+
+      @media (max-width: 767px) {
+        .col-sm-6 {
+          margin: 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+    </div>
+
+  <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.min.js"></script>
+  <script src="https://fb.me/react-dom-0.14.2.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
+
+  <script>
+    // Compiled from Babel
+    'use strict';
+
+    $('document').ready(function () {
+      ReactDOM.render(React.createElement(Markdown, null), document.getElementById('main'));
+    });
+
+    var Markdown = React.createClass({
+      displayName: 'Markdown',
+
+      getInitialState: function getInitialState() {
+        var initialMarkdown = "Heading\n=======\n\nSub-heading\n-----------\n\n### Another deeper heading\n\nParagraphs are separated by a blank line.\n\nLeave 2 spaces at the end of a line to do a\nline break\n\nText attributes *italic*, **bold**, \n`monospace`, ~~strikethrough~~ .\n\nShopping list:\n\n  * apples\n  * oranges\n  * pears\n\nNumbered list:\n\n  1. apples\n  2. oranges\n  3. pears\n\nThe rain---not the reign---in\nSpain.\n\n *[Learn More about Markdown here](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)*";
+        return { markdown: initialMarkdown };
+      },
+
+      handleInput: function handleInput(event) {
+        this.setState({ markdown: event.currentTarget.value });
+      },
+
+      render: function render() {
+        return React.createElement(
+          'div',
+          { className: 'container' },
+          React.createElement(
+            'div',
+            { className: 'page-title' },
+            'Markdown Previewer'
+          ),
+          React.createElement(
+            'div',
+            { className: 'col-sm-6' },
+            React.createElement(
+              'p',
+              { className: 'label' },
+              'Markdown:'
+            ),
+            React.createElement('textarea', { onChange: this.handleInput, value: this.state.markdown, placeholder: 'type markdown here', className: 'form-control', rows: '22' })
+          ),
+          React.createElement(Output, { markdown: this.state.markdown })
+        );
+      }
+    });
+
+    var Output = React.createClass({
+      displayName: 'Output',
+
+      render: function render() {
+        var markdown = marked(this.props.markdown);
+        return React.createElement(
+          'div',
+          { className: 'col-sm-6' },
+          React.createElement(
+            'p',
+            { className: 'label', id: 'output-label' },
+            'Output:'
+          ),
+          React.createElement('div', { className: 'output', dangerouslySetInnerHTML: { __html: markdown } })
+        );
+      }
+    });
+  </script>
+
+  </body>
+</html>

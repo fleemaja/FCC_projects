@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>FreeCodeCamp Leaderboard</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+    <style>
+      #main {
+        font-family: 'Helvetica';
+        margin: 10px;
+      }
+      #main table {
+        width: 700px;
+        margin: 0 auto;
+      }
+      #main table img {
+        width: 50px;
+        padding: 5px;
+      }
+      #main table tr:nth-child(even) {
+        background-color: #BDDFEB;
+      }
+      #main table #col-descriptions {
+        font-size: 20px;
+        font-weight: bold;
+      }
+      #main table #show-recent {
+        display: inline;
+      }
+      #main table #show-all-time {
+        display: none;
+      }
+      #main table #recent:hover,
+      #main table #alltime:hover {
+        cursor: pointer;
+      }
+      #main table td {
+        padding-left: 10px;
+      }
+      #main table a {
+        margin-left: 10px;
+      }
+      #main #table-title {
+        font-size: 42px;
+      }
+      #main #table-title #FCC {
+        margin-right: 10px;
+        width: 60px;
+        padding: 0;
+      }
+
+      @media (max-width: 700px) {
+        table {
+          width: 500px !important;
+        }
+        table #col-descriptions {
+          font-size: 16px !important;
+        }
+        table #table-title {
+          font-size: 32px !important;
+        }
+        table #table-title #FCC {
+          width: 40px !important;
+        }
+      }
+      @media (max-width: 499px) {
+        table {
+          width: 300px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="main">
+    </div>
+
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.min.js"></script>
+  <script src="https://fb.me/react-dom-0.14.2.js"></script>
+
+  <script>
+    'use strict';
+
+    $.ajaxSetup({
+      async: false
+    });
+
+    $('document').ready(function () {
+      ReactDOM.render(React.createElement(LeaderBoard, null), document.getElementById('main'));
+    });
+
+    var LeaderBoard = React.createClass({
+      displayName: 'LeaderBoard',
+
+      getInitialState: function getInitialState() {
+        return { campers: [{}] };
+      },
+      componentDidMount: function componentDidMount() {
+        var recentLeaders = 'https://fcctop100.herokuapp.com/api/fccusers/top/recent';
+        $.get(recentLeaders, function (result) {
+          var leaders = result;
+          this.setState({
+            campers: leaders
+          });
+        }.bind(this));
+      },
+      allTimeLeaders: function allTimeLeaders() {
+        $('#show-all-time').css('display', 'inline');
+        $('#show-recent').css('display', 'none');
+        var allTimeLeaders = 'https://fcctop100.herokuapp.com/api/fccusers/top/alltime';
+        $.get(allTimeLeaders, function (result) {
+          var leaders = result;
+          this.setState({
+            campers: leaders
+          });
+        }.bind(this));
+      },
+      recentLeaders: function recentLeaders() {
+        $('#show-all-time').css('display', 'none');
+        $('#show-recent').css('display', 'inline');
+        var recentLeaders = 'https://fcctop100.herokuapp.com/api/fccusers/top/recent';
+        $.get(recentLeaders, function (result) {
+          var leaders = result;
+          this.setState({
+            campers: leaders
+          });
+        }.bind(this));
+      },
+      render: function render() {
+        return React.createElement(
+          'table',
+          null,
+          React.createElement(
+            'th',
+            { id: 'table-title', colSpan: '4' },
+            React.createElement('img', { id: 'FCC', src: "http://cdn.rawgit.com/Deftwun/e3756a8b518cbb354425/raw/6584db8babd6cbc4ecb35ed36f0d184a506b979e/free-code-camp-logo.svg" }),
+            'Leaderboard'
+          ),
+          React.createElement(
+            'tr',
+            { id: 'col-descriptions' },
+            React.createElement(
+              'td',
+              null,
+              '#'
+            ),
+            React.createElement(
+              'td',
+              null,
+              'Camper'
+            ),
+            React.createElement(
+              'td',
+              { id: 'recent', onClick: this.recentLeaders },
+              'Points in past 30 days ',
+              React.createElement(
+                'span',
+                { id: 'show-recent' },
+                React.createElement('i', { className: 'fa fa-caret-down', 'aria-hidden': 'true' })
+              )
+            ),
+            React.createElement(
+              'td',
+              { id: 'alltime', onClick: this.allTimeLeaders },
+              'All time points ',
+              React.createElement(
+                'span',
+                { id: 'show-all-time' },
+                React.createElement('i', { className: 'fa fa-caret-down', 'aria-hidden': 'true' })
+              )
+            )
+          ),
+          this.state.campers.map(function (camper, i) {
+            return React.createElement(Camper, { camper: camper, key: i, rank: i + 1 });
+          })
+        );
+      }
+    });
+
+    var Camper = React.createClass({
+      displayName: 'Camper',
+
+      render: function render() {
+        var camper = this.props.camper;
+        return React.createElement(
+          'tr',
+          null,
+          React.createElement(
+            'td',
+            null,
+            this.props.rank
+          ),
+          React.createElement(
+            'td',
+            { id: 'username' },
+            React.createElement('img', { src: camper.img }),
+            React.createElement(
+              'a',
+              { target: '_blank', href: "https://www.freecodecamp.com/" + camper.username },
+              camper.username
+            )
+          ),
+          React.createElement(
+            'td',
+            null,
+            camper.recent
+          ),
+          React.createElement(
+            'td',
+            null,
+            camper.alltime
+          )
+        );
+      }
+    });
+  </script>
+  </body>
+</html>

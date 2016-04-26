@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Doping Allegations in Professional Cycling</title>
+    <style>
+      body {
+        margin-top: 2%;
+        font-family: 'Helvetica';
+        text-align: center;
+      }
+      circle:hover {
+        cursor: pointer;
+      }
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+      }
+
+      .axis text {
+        font-family: sans-serif;
+        font-size: 11px;
+      }
+
+      div.tooltip {
+        position: absolute;
+        text-align: center;
+        width: 90px;
+        padding: 8px;
+        font: 12px sans-serif;
+        background: #333;
+        color: white;
+        border: 0px;
+        border-radius: 8px;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
+
+    <script>
+      var datasetURL = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/cyclist-data.json';
+
+      d3.json(datasetURL, function(json) {
+      var w = 800;
+      var h = 500;
+      var padding = 50;
+
+      var dataset = json;
+      var slowestTime = d3.min(dataset, function(d) { return d['Seconds']; });
+
+      //Create scale functions
+      var xScale = d3.scale.linear()
+                 .domain([-(slowestTime - d3.max(dataset, function(d) { return d['Seconds']; }) - 20), 0])
+                 .range([padding, w - padding * 2]);
+
+      var yScale = d3.scale.linear()
+                 .domain([d3.max(dataset, function(d) { return d['Place']; }) + 1, d3.min(dataset, function(d) { return d['Place']; })])
+                 .range([h - padding, padding]);
+
+      var formatTime = d3.time.format("%M:%S"),
+        formatMinutes = function(d) { return formatTime(new Date(3000, 0, 0, 0, 0, d)); };
+
+      //Define X axis
+      var xAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient("bottom")
+                .ticks(5)
+                .tickFormat(formatMinutes);
+
+      //Define Y axis
+      var yAxis = d3.svg.axis()
+                .scale(yScale)
+                .orient("left")
+                .ticks(7);
+
+      //Create SVG element
+      var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+      var div = d3.select("body").append("div")
+          .attr("class", "tooltip")
+          .style("opacity", 0);
+
+      //Create circles
+      svg.selectAll("circle")
+         .data(dataset)
+         .enter()
+         .append("circle")
+         .attr("cx", function(d) {
+            return xScale(-(slowestTime - d['Seconds']));
+         })
+         .attr("cy", function(d) {
+            return yScale(d['Place']);
+         })
+         .attr("r", 7)
+         .attr("fill", function(d) {
+            if (d['Doping'] !== "") {
+              return "#f44";
+            } else {
+              return "#333";
+            }
+         })
+         .on("mouseover", function(d) {
+                div.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                div	.html("<p>" + d['Name'] + ": " + d['Nationality'] + "</p><p>Year: " + d['Year'] + " Time: " + d['Time'] + "</p><p>" + d['Doping'] + "</p>")
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+                })
+         .on("mouseout", function(d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });;
+
+      //Create X axis
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(0," + (h - padding) + ")")
+        .call(xAxis);
+
+      svg.append("text")
+            .attr("x", (w/2) - 20 )
+            .attr("y", h )
+            .style("text-anchor", "middle")
+            .text("Minutes Behind Fastest Time");
+
+      //Create Y axis
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(" + padding + ",0)")
+        .call(yAxis);
+
+      svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0)
+        .attr("x", 0 - (h / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Ranking");
+
+      svg.append("circle")
+        .attr("cx", w - 280)
+        .attr("cy", h - 205)
+        .attr("r", 7)
+        .attr("fill", "#f44");
+
+      svg.append("text")
+        .attr("x", w - 200)
+        .attr("y", h - 200 )
+        .style("text-anchor", "middle")
+        .text("Doping Allegations");
+
+      svg.append("circle")
+        .attr("cx", w - 280)
+        .attr("cy", h - 175)
+        .attr("r", 7)
+        .attr("fill", "#333");
+
+      svg.append("text")
+        .attr("x", w - 188)
+        .attr("y", h - 170 )
+        .style("text-anchor", "middle")
+        .text("No Doping Allegations");
+
+      svg.append("text")
+        .attr("x", w - 548)
+        .attr("y", h - 470 )
+        .style("text-anchor", "middle")
+        .style("font-size", "24")
+        .text("Doping in Professional Cycling");
+
+      svg.append("text")
+        .attr("x", w - 548)
+        .attr("y", h - 450 )
+        .style("text-anchor", "middle")
+        .text("35 Fastest Times up Alpe d'Huez");
+
+      svg.append("text")
+        .attr("x", w - 548)
+        .attr("y", h - 430 )
+        .style("text-anchor", "middle")
+        .text("(Normalized to 13.8km distance)");
+      });
+    </script>
+  </body>
+</html>

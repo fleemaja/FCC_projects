@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Recipe Box</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    <style>
+      body {
+        text-align: center;
+        font-family: "Futura";
+        font-size: 24px;
+        margin-top: 5%;
+      }
+
+      #title {
+        font-size: 32px;
+        margin-bottom: 40px;
+      }
+
+      i {
+        margin-right: 10px;
+      }
+
+      button {
+        margin-top: 40px;
+      }
+
+      .ingredient {
+        color: #8C9CB1;
+      }
+
+      .btn-warning {
+        margin-right: 20px;
+      }
+
+      .jumbotron {
+        margin-left: 23%;
+        margin-right: 23%;
+        padding: 20px;
+        background-color: #eed4b5;
+        border-radius: 25px;
+        box-shadow: 10px 5px 5px #888888;
+      }
+
+      .panel {
+        max-width: 500px;
+        margin: 0 auto;
+        padding-bottom: 10px;
+      }
+
+      input[type="text"],
+      textarea {
+        font-size: 14px;
+        width: 80%;
+        height: 50px;
+        margin-bottom: 20px;
+      }
+
+      @media (max-width: 900px) {
+        .jumbotron {
+          margin-left: 13%;
+          margin-right: 13%;
+        }
+      }
+      @media (max-width: 451px) {
+        .jumbotron {
+          margin-left: 3%;
+          margin-right: 3%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="title">
+      <i class="fa fa-cutlery" aria-hidden="true"></i>
+      <span>Recipe Box</span>
+    </div>
+
+    <div id="main">
+    </div>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.min.js"></script>
+    <script src="https://fb.me/react-dom-0.14.2.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <script>
+      'use strict';
+
+      $('document').ready(function () {
+        ReactDOM.render(React.createElement(Box, null), document.getElementById('main'));
+      });
+
+      var addModal = document.getElementById('addModal');
+
+      var AddModalForm = React.createClass({
+        displayName: 'AddModalForm',
+
+        getInitialState: function getInitialState() {
+          return { recipe: "", ingredients: "" };
+        },
+        handleRecipeChange: function handleRecipeChange(event) {
+          this.setState({ recipe: event.target.value });
+        },
+        handleIngredientsChange: function handleIngredientsChange(event) {
+          this.setState({ ingredients: event.target.value });
+        },
+        render: function render() {
+          return React.createElement(
+            'div',
+            { className: 'container' },
+            React.createElement(
+              'div',
+              { className: 'modal fade', id: 'addModal', role: 'dialog' },
+              React.createElement(
+                'div',
+                { className: 'modal-dialog' },
+                React.createElement(
+                  'div',
+                  { className: 'modal-content' },
+                  React.createElement(
+                    'div',
+                    { className: 'modal-header' },
+                    React.createElement(
+                      'button',
+                      { type: 'button', className: 'close', 'data-dismiss': 'modal' },
+                      '×'
+                    ),
+                    React.createElement(
+                      'h4',
+                      { className: 'modal-title' },
+                      'Add New Recipe'
+                    )
+                  ),
+                  React.createElement(
+                    'div',
+                    { className: 'modal-body' },
+                    React.createElement(
+                      'p',
+                      null,
+                      'Recipe'
+                    ),
+                    React.createElement('input', {
+                      type: 'text',
+                      onChange: this.handleRecipeChange,
+                      placeholder: "Recipe Name"
+                    }),
+                    React.createElement(
+                      'p',
+                      null,
+                      'Ingredients'
+                    ),
+                    React.createElement('textarea', {
+                      onChange: this.handleIngredientsChange,
+                      placeholder: "Enter, Ingredients, Separated, By, Commas"
+                    })
+                  ),
+                  React.createElement(
+                    'div',
+                    { className: 'modal-footer' },
+                    React.createElement(
+                      'button',
+                      { type: 'button', className: 'btn btn-info', onClick: this.props.addNew.bind(this, this.state.recipe, this.state.ingredients) },
+                      'Add Recipe'
+                    ),
+                    React.createElement(
+                      'button',
+                      { type: 'button', className: 'btn btn-default', 'data-dismiss': 'modal' },
+                      'Close'
+                    )
+                  )
+                )
+              )
+            )
+          );
+        }
+      });
+
+      var editModal = document.getElementById('editModal');
+
+      var EditModalForm = React.createClass({
+        displayName: 'EditModalForm',
+
+        getInitialState: function getInitialState() {
+          var recipe = this.props.recipe;
+          var ingredients = this.props.ingredients;
+          return { recipe: recipe, ingredients: ingredients };
+        },
+        handleRecipeChange: function handleRecipeChange(event) {
+          this.setState({ recipe: event.target.value });
+        },
+        handleIngredientsChange: function handleIngredientsChange(event) {
+          this.setState({ ingredients: event.target.value });
+        },
+        render: function render() {
+          return React.createElement(
+            'div',
+            { className: 'container' },
+            React.createElement(
+              'div',
+              { className: 'modal fade', id: "editModal" + this.props.id, role: 'dialog' },
+              React.createElement(
+                'div',
+                { className: 'modal-dialog' },
+                React.createElement(
+                  'div',
+                  { className: 'modal-content' },
+                  React.createElement(
+                    'div',
+                    { className: 'modal-header' },
+                    React.createElement(
+                      'button',
+                      { type: 'button', className: 'close', 'data-dismiss': 'modal' },
+                      '×'
+                    ),
+                    React.createElement(
+                      'h4',
+                      { className: 'modal-title' },
+                      'Edit Recipe'
+                    )
+                  ),
+                  React.createElement(
+                    'div',
+                    { className: 'modal-body' },
+                    React.createElement(
+                      'p',
+                      null,
+                      'Recipe'
+                    ),
+                    React.createElement('input', {
+                      type: 'text',
+                      onChange: this.handleRecipeChange,
+                      value: this.state.recipe,
+                      placeholder: "Recipe Name"
+                    }),
+                    React.createElement(
+                      'p',
+                      null,
+                      'Ingredients'
+                    ),
+                    React.createElement('textarea', {
+                      onChange: this.handleIngredientsChange,
+                      value: this.state.ingredients,
+                      placeholder: "Enter, Ingredients, Separated, By, Commas"
+                    })
+                  ),
+                  React.createElement(
+                    'div',
+                    { className: 'modal-footer' },
+                    React.createElement(
+                      'button',
+                      { type: 'button', className: 'btn btn-info', onClick: this.props.editRecipe.bind(this, this.state.recipe, this.state.ingredients, this.props.id) },
+                      'Edit Recipe'
+                    ),
+                    React.createElement(
+                      'button',
+                      { type: 'button', className: 'btn btn-default', 'data-dismiss': 'modal' },
+                      'Close'
+                    )
+                  )
+                )
+              )
+            )
+          );
+        }
+      });
+
+      var Box = React.createClass({
+        displayName: 'Box',
+
+        getInitialState: function getInitialState() {
+          var recipeStorage = JSON.parse(localStorage.getItem("_recipes")) || { "tacos": "tortilla,beef,salsa,queso,guacamole", "pizza": "dough,tomato sauce,mozarella,pepperonis", "bacon cheeseburgers": "buns, ground beef, lettuce, onion, tomato, bacon, american cheese" };
+          return { recipes: recipeStorage };
+        },
+        handleChange: function handleChange(newRecipe, newIngredients) {
+          $('#addModal').modal('toggle');
+          $('#addModal').find('input[type=text], textarea').val('');
+          var stateCopy = Object.assign({}, this.state);
+          stateCopy.recipes[newRecipe] = newIngredients;
+          this.setState(stateCopy);
+        },
+        handleEdit: function handleEdit(newState) {
+          this.setState(newState);
+        },
+        componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+          localStorage._recipes = JSON.stringify(this.state.recipes);
+        },
+        render: function render() {
+          var that = this;
+          return React.createElement(
+            'div',
+            { className: 'jumbotron' },
+            React.createElement(
+              'div',
+              { className: 'panel-group', id: 'accordion', role: 'tablist', 'aria-multiselectable': 'false' },
+              Object.keys(this.state.recipes).map(function (recipe, i) {
+                return React.createElement(Recipe, { recipe: recipe, ingredients: that.state.recipes[recipe], id: i, edit: that.handleEdit, recipeState: that.state });
+              })
+            ),
+            React.createElement(AddModalForm, { addNew: this.handleChange }),
+            React.createElement(
+              'button',
+              { type: 'button', className: 'btn btn-info btn-lg', 'data-toggle': 'modal', 'data-target': '#addModal' },
+              'Add Recipe'
+            )
+          );
+        }
+      });
+
+      var Recipe = React.createClass({
+        displayName: 'Recipe',
+
+        handleEdit: function handleEdit(newRecipe, newIngredients, id) {
+          $('#editModal' + id).modal('toggle');
+          var stateCopy = Object.assign({}, this.props.recipeState);
+          stateCopy.recipes[newRecipe] = newIngredients;
+          this.props.edit(stateCopy);
+        },
+        handleDelete: function handleDelete() {
+          var stateCopy = Object.assign({}, this.props.recipeState);
+          delete stateCopy.recipes[this.props.recipe];
+          this.props.edit(stateCopy);
+        },
+        render: function render() {
+          var ingredientList = this.props.ingredients.split(",");
+          return React.createElement(
+            'div',
+            { className: 'panel panel-default' },
+            React.createElement(
+              'div',
+              { className: 'panel-heading', role: 'tab', id: "heading" + this.props.id },
+              React.createElement(
+                'h4',
+                { className: 'panel-title' },
+                React.createElement(
+                  'a',
+                  { className: 'collapsed', role: 'button', 'data-toggle': 'collapse', 'data-parent': '#accordion', href: "#collapse" + this.props.id, 'aria-expanded': 'false', 'aria-controls': "collapse" + this.props.id },
+                  this.props.recipe
+                )
+              )
+            ),
+            React.createElement(
+              'div',
+              { id: "collapse" + this.props.id, className: 'panel-collapse collapse', role: 'tabpanel', 'aria-labelledby': "heading" + this.props.id },
+              React.createElement(
+                'div',
+                { className: 'panel-body' },
+                React.createElement(
+                  'p',
+                  null,
+                  'Ingredients'
+                ),
+                ingredientList.map(function (ingredient) {
+                  return React.createElement(
+                    'div',
+                    { className: 'ingredient' },
+                    ingredient.trim()
+                  );
+                }),
+                React.createElement(EditModalForm, { editRecipe: this.handleEdit, recipe: this.props.recipe, ingredients: this.props.ingredients, key: this.props.id, id: this.props.id }),
+                React.createElement(
+                  'button',
+                  { type: 'button', className: 'btn btn-warning btn-lg', 'data-toggle': 'modal', 'data-target': "#editModal" + this.props.id },
+                  'Edit'
+                ),
+                React.createElement(
+                  'button',
+                  { type: 'button', className: 'btn btn-danger btn-lg', onClick: this.handleDelete },
+                  'Delete'
+                )
+              )
+            )
+          );
+        }
+      });
+    </script>
+  </body>
+</html>

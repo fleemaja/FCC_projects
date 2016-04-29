@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Global Temperature Map</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+
+    <style>
+      body {
+        font: 11px sans-serif;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      #chart-title {
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .fa-globe {
+        font-size: 60px;
+        margin-top: 10px;
+        color: lightsteelblue;
+      }
+
+      #year-range {
+        color: #555;
+        font-size: 20px;
+      }
+
+      #celsius {
+        width: 500px;
+        margin: 0 auto;
+      }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+
+      .tooltip {
+        position: absolute;
+        background-color: #555;
+        color: white;
+        width: 140px;
+        font-size: 16px;
+        line-height: 20px;
+        border-radius: 5px;
+        padding: 10px;
+        pointer-events: none;
+      }
+
+      .label {
+        font-size: 16px;
+        font-weight: 900;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <i class="fa fa-globe" aria-hidden="true"></i>
+    <div id="chart-title">
+     Monthly Global Land-Surface Temperature
+    </div>
+    <div id="year-range">
+      1753 - 2015
+    </div>
+    <div id="celsius">
+      Temperatures are in Celsius and reported as anomalies relative to the Jan 1951-Dec 1980 average.
+    Estimated Jan 1951-Dec 1980 absolute temperature ℃: 8.66 +/- 0.07
+    </div>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
+
+    <script>
+      var margin = { top: 20, right: 20, bottom: 90, left: 70 },
+      width = 960 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
+
+      var monthMap = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ];
+
+      var colorCode = function(cValue) {
+        if (cValue < 2.7) {
+          return "#5E4FA2";
+        } else if (cValue < 3.9) {
+          return "#3288BD";
+        } else if (cValue < 5) {
+          return "#66C2A5";
+        } else if (cValue < 6.1) {
+          return "#ABDDA4";
+        } else if (cValue < 7.2) {
+          return "#E6F598";
+        } else if (cValue < 8.3) {
+          return "#FFFFBF";
+        } else if (cValue < 9.4) {
+          return "#FEE08B";
+        } else if (cValue < 10.5) {
+          return "#FDAE61";
+        } else if (cValue < 11.6) {
+          return "#F46D43";
+        } else if (cValue < 12.7) {
+          return "#D53E4F";
+        } else {
+          return "#9E0142";
+        }
+      };
+
+      var color = d3.scale.ordinal()
+        .domain(["0", "2.7", "3.9", "5", "6.1", "7.2", "8.3", "9.4", "10.5", "11.6", "12.7"])
+        .range(["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"]);
+
+      var xValue = function(d) { return d.year;},
+        xScale = d3.scale.linear().range([0, width]),
+        xMap = function(d) { return xScale(xValue(d));},
+        xAxis = d3.svg.axis().scale(xScale).orient("bottom").tickFormat(d3.format("d"));
+
+      var yValue = function(d) { return d.month;},
+        yScale = d3.scale.linear().range([0, height]),
+        yMap = function(d) { return yScale(yValue(d)) + 1;},
+        yAxis = d3.svg.axis().scale(yScale).orient("left")
+                .tickFormat(function(d) {
+                  return monthMap[d - 1];
+                });
+
+      var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+      var datasetURL = "https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/global-temperature.json";
+
+      d3.json(datasetURL, function(json) {
+
+        var baseTemperature = json['baseTemperature'];
+        var data = json['monthlyVariance'];
+
+        var cValue = function(d) { return baseTemperature + d.variance;};
+
+        xScale.domain([d3.min(data, xValue) - 1, d3.max(data, xValue) + 1]);
+        yScale.domain([d3.min(data, yValue), d3.max(data, yValue) + 1]);
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+            .append("text")
+            .attr("class", "label")
+            .attr("x", width/2)
+            .attr("y", 40)
+            .style("text-anchor", "end")
+            .text("Years");
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .append("text")
+            .attr("class", "label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -66)
+            .attr("x", -150)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Months");
+
+        svg.selectAll(".bar")
+            .data(data)
+            .enter().append("rect")
+            .attr("height", 30)
+            .attr("width", 10)
+            .attr("x", xMap)
+            .attr("y", yMap)
+            .style("fill", function(d) { return colorCode(cValue(d));})
+            .on("mouseover", function(d) {
+                tooltip.transition()
+                     .duration(200)
+                     .style("opacity", .9);
+                tooltip.html(d.year + " - " + monthMap[d.month - 1] + "<br/>" + (baseTemperature + parseFloat(d.variance)).toFixed(3)
+                + " &deg;C <br/>" + parseFloat(d.variance).toFixed(3) + " &deg;C")
+                     .style("left", (d3.event.pageX - 70) + "px")
+                     .style("top", (d3.event.pageY - 88) + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip.transition()
+                     .duration(500)
+                     .style("opacity", 0);
+            });
+
+        var legend = svg.selectAll(".legend")
+            .data(color.domain())
+            .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { return "translate(" + i * 38 + ", " + (height + 60) + ")"; });
+
+        legend.append("rect")
+            .attr("x", width - 420)
+            .attr("width", 38)
+            .attr("height", 18)
+            .style("fill", color);
+
+        legend.append("text")
+            .attr("x", width - 408)
+            .attr("y", 24)
+            .attr("dy", ".35em")
+            .style("text-anchor", "end")
+            .text(function(d) { return d;})
+      });
+    </script>
+  </body>
+</html>

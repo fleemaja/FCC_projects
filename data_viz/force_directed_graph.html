@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Force-Directed Graph</title>
+    <style media="screen">
+      body {
+        background-color: #DFE7F1;
+        text-align: center;
+        font: 16px sans-serif;
+      }
+
+      .node {
+        stroke: #fff;
+        stroke-width: 1.5px;
+      }
+
+      .link {
+        stroke: #999;
+        stroke-opacity: .6;
+      }
+
+      .d3-tip {
+        line-height: 1;
+        font-weight: bold;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        border-radius: 2px;
+      }
+
+      /* Creates a small triangle extender for the tooltip */
+      .d3-tip:after {
+        box-sizing: border-box;
+        display: inline;
+        font-size: 10px;
+        width: 100%;
+        line-height: 1;
+        color: rgba(0, 0, 0, 0.8);
+        content: "\25BC";
+        position: absolute;
+        text-align: center;
+      }
+
+      /* Style northward tooltips differently */
+      .d3-tip.n:after {
+        margin: -1px 0 0 0;
+        top: 100%;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
+    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+
+    <script>
+    var width = 960,
+        height = 600;
+
+    var color = d3.scale.category20();
+
+    var force = d3.layout.force()
+      .charge(-160)
+      .linkDistance(100)
+      .size([width, height]);
+
+    var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    var tip = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10, 0])
+    .html(function(d) {
+      return d.username;
+    })
+
+    svg.call(tip);
+
+    function getRootUrl(url) {
+      return url.replace('http://','').replace('https://','').split(/[/?#]/)[0].replace(/www\./,'');
+    };
+
+    var nodeIndices = {};
+    var connectionCount = {};
+
+    var getNodes = function(graph) {
+      var nodes = [];
+      for (var i = 0; i < graph.length; i++) {
+        var potentialNode = graph[i];
+        var rootLink = getRootUrl(potentialNode['link']);
+        if (!nodeIndices.hasOwnProperty(potentialNode['author']['username'])) {
+          nodes.push(potentialNode['author']);
+          nodeIndices[potentialNode['author']['username']] = nodes.length - 1;
+        }
+        if (!nodeIndices.hasOwnProperty(rootLink)) {
+          nodes.push({ link: rootLink, picture: null, username: rootLink });
+          nodeIndices[rootLink] = nodes.length - 1;
+        }
+      }
+      return nodes;
+    };
+
+    var getLinks = function(graph, nodes) {
+      var links = [];
+      for (var i = 0; i < graph.length; i++) {
+        var sourceVal = nodeIndices[graph[i]['author']['username']];
+        var targetVal = nodeIndices[getRootUrl(graph[i]['link'])];
+        links.push({ source: sourceVal, target: targetVal });
+        connectionCount[sourceVal] = ++connectionCount[sourceVal] || 0;
+        connectionCount[targetVal] = ++connectionCount[targetVal] || 0;
+      }
+      return links;
+    };
+
+    var news = "https://www.freecodecamp.com/news/hot";
+
+    d3.json(news, function(error, graph) {
+      if (error) throw error;
+
+      var nodes = getNodes(graph);
+      var links = getLinks(graph, nodes);
+
+      force
+          .nodes(nodes)
+          .links(links)
+          .start();
+
+      var link = svg.selectAll(".link")
+          .data(links)
+          .enter().append("line")
+          .attr("class", "link")
+          .style("stroke-width", function(d) { return 2; });
+
+      var circle = svg.selectAll(".circle")
+        .data(nodes)
+        .enter().append("circle")
+        .attr("class", "circle")
+        .attr("r", function(d, i) {
+          return (connectionCount[i.toString()] * 3) + 7;
+        })
+        .style("fill", function(d) { return "white"; })
+        .style("stroke", "black")
+        .call(force.drag);
+
+      var node = svg.selectAll(".node")
+        .data(nodes)
+        .enter().append("g")
+        .attr("class", "node")
+        .call(force.drag);
+
+      node.append("image")
+          .attr("xlink:href", function(d) {
+            if (d['picture']) {
+              return d['picture'];
+            } else {
+              return null;
+            }
+          })
+          .attr("x", -23)
+          .attr("y", -22)
+          .attr("width", 46)
+          .attr("height", 46)
+          .on('mouseover', tip.show)
+          .on('mouseout', tip.hide);
+
+      force.on("tick", function() {
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        circle.attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
+
+        node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+      });
+    });
+    </script>
+  </body>
+</html>

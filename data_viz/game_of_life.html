@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Game of Life</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+      body {
+        text-align: center;
+        font-family: "Futura";
+      }
+      body #game-label {
+        font-size: 24px;
+        margin: 20px;
+      }
+      body button {
+        margin: 0 10px 0 10px;
+      }
+      body #info {
+        width: 480px;
+        margin: 0 auto;
+      }
+      body #info #note {
+        float: left;
+      }
+      body #info #counter {
+        float: right;
+      }
+      body #instructions {
+        background-color: #BDE5F1;
+        width: 320px;
+        margin: 0 auto;
+        padding: 10px;
+        margin-top: 80px;
+        margin-bottom: 40px;
+      }
+      body #instructions a {
+        font-size: 18px;
+      }
+      body #instructions ol {
+        text-align: left;
+      }
+      body #instructions li {
+        margin-bottom: 10px;
+      }
+
+      table {
+        margin: 10px auto;
+        border-collapse: collapse;
+        cursor: pointer;
+        background-color: #E9E9E9;
+      }
+      table td {
+        height: 12px;
+        width: 12px;
+        border-radius: 25px;
+      }
+      table td:hover {
+        border: 1px solid black;
+      }
+      table .alive {
+        background-color: #FFCC11;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-label">
+      <i class="fa fa-bug" aria-hidden="true"></i> Game of Life
+    </div>
+
+    <div id="main">
+    </div>
+
+    <div id="instructions">
+      <p>
+        <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank">Game of Life</a>
+      </p>
+      <ol>
+        <li>
+          Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+        </li>
+        <li>
+          Any live cell with two or three live neighbours lives on to the next generation.
+        </li>
+        <li>
+          Any live cell with more than three live neighbours dies, as if by over-population.
+        </li>
+        <li>
+          Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+        </li>
+      </ol>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.min.js"></script>
+    <script src="https://fb.me/react-dom-0.14.2.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+
+    <script>
+      "use strict";
+
+      var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+      var board = [];
+      var width = 42;
+      var height = 30;
+      var generation = 0;
+
+      function clearBoard() {
+        board = [];
+        generation = 0;
+        for (var i = 0; i < height; i++) {
+          board.push([]);
+          for (var j = 0; j < width; j++) {
+            var pos = i.toString() + j.toString();
+            board[i].push("dead");
+          }
+        }
+      }
+
+      clearBoard();
+
+      function initialBoard() {
+        board.forEach(function (row, i) {
+          row.forEach(function (col, j) {
+            var randVal = Math.random();
+            if (randVal < 0.25) {
+              board[i][j] = "alive";
+            } else {
+              board[i][j] = "dead";
+            }
+          });
+        });
+      }
+
+      initialBoard();
+
+      function inBounds(row, col) {
+        if (row < height && row >= 0) {
+          if (col < width && col >= 0) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function aliveNeighbors(board, row, col) {
+        var DELTAS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+        var alive = 0;
+        for (var i = 0; i < DELTAS.length; i++) {
+          var rowToCheck = DELTAS[i][0] + row;
+          var colToCheck = DELTAS[i][1] + col;
+          if (inBounds(rowToCheck, colToCheck)) {
+            if (board[rowToCheck][colToCheck] === "alive") {
+              alive += 1;
+            }
+          }
+        }
+        return alive;
+      }
+
+      function arrayClone(arr) {
+        var i, copy;
+        if (Array.isArray(arr)) {
+          copy = arr.slice(0);
+          for (i = 0; i < copy.length; i++) {
+            copy[i] = arrayClone(copy[i]);
+          }
+          return copy;
+        } else if ((typeof arr === "undefined" ? "undefined" : _typeof(arr)) === 'object') {
+          throw 'Cannot clone array containing an object!';
+        } else {
+          return arr;
+        }
+      }
+
+      $('document').ready(function () {
+        ReactDOM.render(React.createElement(Game, null), document.getElementById('main'));
+      });
+
+      var Game = React.createClass({
+        displayName: "Game",
+
+        getInitialState: function getInitialState() {
+          return { cellBoard: board, generation: generation };
+        },
+        cellUpdate: function cellUpdate(neighbors, status) {
+          if (status === "dead") {
+            if (neighbors === 3) {
+              return "alive";
+            } else {
+              return "dead";
+            }
+          } else if (neighbors === 2 || neighbors === 3) {
+            return "alive";
+          } else {
+            return "dead";
+          }
+        },
+        clearGameBoard: function clearGameBoard() {
+          board = [];
+          generation = 0;
+          for (var i = 0; i < height; i++) {
+            board.push([]);
+            for (var j = 0; j < width; j++) {
+              var pos = i.toString() + j.toString();
+              board[i].push("dead");
+            }
+          }
+          this.pauseGame();
+          this.setState({ cellBoard: board, generation: generation });
+        },
+        updateBoard: function updateBoard() {
+          var gameBoard = this.state.cellBoard;
+          var newBoard = arrayClone(gameBoard);
+          var anyAlive = false;
+          for (var i = 0; i < height; i++) {
+            for (var j = 0; j < width; j++) {
+              var neighbors = aliveNeighbors(gameBoard, i, j);
+              if (neighbors > 0) {
+                anyAlive = true;
+              }
+              var status = gameBoard[i][j];
+              newBoard[i][j] = this.cellUpdate(neighbors, status);
+            }
+          }
+          if (anyAlive) {
+            var gen = this.state.generation + 1;
+          } else {
+            var gen = 0;
+            this.pauseGame();
+          }
+          this.setState({ cellBoard: newBoard, generation: gen });
+        },
+        clickUpdate: function clickUpdate(i, j) {
+          var gameBoard = this.state.cellBoard;
+          var newBoard = arrayClone(gameBoard);
+          var status = gameBoard[i][j];
+          if (status === "dead") {
+            newBoard[i][j] = "alive";
+          } else {
+            newBoard[i][j] = "dead";
+          }
+          this.setState({ cellBoard: newBoard });
+        },
+        componentDidMount: function componentDidMount() {
+          this.updateInterval = setInterval(this.updateBoard, 100);
+        },
+        pauseGame: function pauseGame() {
+          clearInterval(this.updateInterval);
+        },
+        runGame: function runGame() {
+          clearInterval(this.updateInterval);
+          this.updateInterval = setInterval(this.updateBoard, 100);
+        },
+        render: function render() {
+          var that = this;
+          return React.createElement(
+            "div",
+            null,
+            React.createElement(
+              "button",
+              { className: "btn btn-info", onClick: this.runGame },
+              "Run"
+            ),
+            React.createElement(
+              "button",
+              { className: "btn btn-info", onClick: this.pauseGame },
+              "Pause"
+            ),
+            React.createElement(
+              "button",
+              { className: "btn btn-info", onClick: this.clearGameBoard },
+              "Clear"
+            ),
+            React.createElement(
+              "table",
+              null,
+              this.state.cellBoard.map(function (row, i) {
+                return React.createElement(
+                  "tr",
+                  null,
+                  row.map(function (cell, j) {
+                    return React.createElement(Cell, { addNew: that.clickUpdate, row: i, col: j, status: cell });
+                  })
+                );
+              })
+            ),
+            React.createElement(
+              "div",
+              { id: "info" },
+              React.createElement(
+                "span",
+                { id: "note" },
+                "Click anywhere on the board to add cells"
+              ),
+              React.createElement(
+                "span",
+                { id: "counter" },
+                "Generation: ",
+                this.state.generation
+              )
+            )
+          );
+        }
+      });
+
+      var Cell = React.createClass({
+        displayName: "Cell",
+
+        render: function render() {
+          return React.createElement("td", { onClick: this.props.addNew.bind(null, this.props.row, this.props.col), className: this.props.status });
+        }
+      });
+    </script>
+  </body>
+</html>

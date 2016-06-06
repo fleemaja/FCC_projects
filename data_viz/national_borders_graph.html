@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>National Borders Graph</title>
+    <link rel="stylesheet" href="http://dl.dropboxusercontent.com/u/64467477/country%20data%20for%20force%20directed%20graph/flags.css">
+    <style media="screen">
+      div.tooltip {
+        position: absolute;
+        text-align: center;
+        padding: 7px;
+        font: 12px sans-serif;
+        background: lightsteelblue;
+        border: 0px;
+        border-radius: 8px;
+        pointer-events: none;
+      }
+
+      .flag {
+        position: absolute;
+      }
+
+      .flagbox {
+        position: absolute;
+      }
+
+      .link {
+        stroke-width: 1px;
+        stroke: #CCC;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="flagbox"></div>
+    
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
+
+    <script>
+      var width = 800,
+        height = 800;
+
+      // Define the div for the tooltip
+      var div = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+      var svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      d3.json("https://raw.githubusercontent.com/DealPete/forceDirected/master/countries.json", function(error, data) {
+        if (error) throw error;
+
+        var force = d3.layout.force()
+          .size([width, height])
+          .nodes(data.nodes)
+          .links(data.links)
+          .charge(-100)
+          .linkDistance(30);
+
+        var link = svg.selectAll('.link')
+          .data(data.links)
+          .enter()
+          .append('line')
+          .attr('class', 'link');
+
+        var node = d3.select('.flagbox').selectAll('.node')
+          .data(data.nodes)
+          .enter()
+          .append('img')
+          .attr('class', function(d) { return 'flag flag-' + d.code; } )
+          .on("mouseover", function(d) {
+            div.transition()
+              .duration(200)
+              .style("opacity", .9);
+            div.html(d.country)
+              .style("left", (d3.event.pageX) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+          })
+          .on("mouseout", function(d) {
+            div.transition()
+              .duration(500)
+              .style("opacity", 0);
+        })
+          .call(force.drag);
+
+        force.on('tick', function() {
+          node.style('left', function(d) { return (d.x - 8) + "px"; })
+            .style('top', function(d) { return (d.y - 5) + "px"})
+
+          link.attr('x1', function(d) { return d.source.x })
+          .attr('x2', function(d) { return d.target.x })
+          .attr('y1', function(d) { return d.source.y })
+          .attr('y2', function(d) { return d.target.y });
+
+        });
+
+        force.start();
+      });
+    </script>
+  </body>
+</html>

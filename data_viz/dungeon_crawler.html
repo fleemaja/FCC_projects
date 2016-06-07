@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Dungeon Crawler</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" media="screen">
+
+    <style media="screen">
+      body {
+        background-color: #7f7f7f;
+        text-align: center;
+        font-family: "Futura";
+        color: white;
+      }
+
+      #game-content {
+        margin-top: 20px;
+      }
+
+      .row {
+        padding: 0;
+        margin: 0;
+        line-height: 0px;
+      }
+
+      /* modal background */
+      .modal {
+        display: block;
+        position: fixed;
+        z-index: 1;
+        font-size: 16px;
+        text-align: center;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: black;
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+
+      /* modal content/box */
+      .modal-content {
+        background-color: #fefefe;
+        color: #161616;
+        margin: 8% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%;
+      }
+
+      #lose-modal, #win-modal {
+        display: none;
+        font-size: 28px;
+      }
+
+      .lose {
+        background-color: #FF7F7F;
+        color: white;
+      }
+
+      #info {
+        background-color: white;
+        color: black;
+      }
+
+      #game-name {
+        color: gray;
+        font-size: 24px;
+      }
+
+      .skull {
+        padding: 10px;
+      }
+
+      #instructions {
+        text-align: left;
+        display: inline-block;
+        margin: 20px auto;
+      }
+
+      .btn {
+        display: block;
+        margin: 0 auto;
+      }
+
+      .btn:hover {
+        opacity: 0.7;
+      }
+
+      #dark {
+        display: inline;
+        background-color: lightsteelblue;
+      }
+
+      .tile {
+        display: inline-block;
+        height: 10px;
+        width: 10px;
+        background-color: black;
+      }
+
+      .tile0 {
+        background-color: #7f7f7f;
+      }
+
+      .tile1 {
+        background-color: white;
+      }
+
+      .tile2 {
+        background-color: #1f77b4;
+      }
+
+      .tile3 {
+        background-color: #9467bd;
+      }
+
+      .tile4 {
+        background-color: #2ca02c;
+      }
+
+      .tile5 {
+        background-color: #ff7f0e;
+      }
+
+      .tile6 {
+        background-color: #d62728;
+      }
+
+      .tile7 {
+        background-color: black;
+      }
+
+      span:not(.vals) {
+        padding: 0 10px 0 10px;
+      }
+
+      .vals {
+        color: steelblue;
+      }
+
+      @media (max-width: 715px) {
+        .tile {
+          height: 8px;
+          width: 8px;
+        }
+      }
+      @media (max-width: 577px) {
+        .tile {
+          height: 5px;
+          width: 5px;
+        }
+      }
+      @media (max-width: 370px) {
+        .tile {
+          height: 3px;
+          width: 3px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <p id="game-name">Roguelike Dungeon Crawler</p>
+        <div id="instructions">
+          <p><div class="tile tile2"></div> = player (use arrow keys to move)</p>
+          <p><div class="tile tile3"></div> = door to next dungeon</p>
+          <p><div class="tile tile4"></div> = healing potion (+20 health)</p>
+          <p><div class="tile tile5"></div> = new weapon (adds attack damage)</p>
+          <p><div class="tile tile6"></div> = enemy. Run into them to trade attacks</p>
+          <p><div class="tile tile7"></div> = boss. Kill in dungeon 4 to win!</p>
+        </div>
+        <button class="btn">Play</button>
+      </div>
+    </div>
+
+    <div id="lose-modal" class="modal">
+      <div class="modal-content lose">
+        <span class="skull">&#9760;</span> You Died <span class="skull">&#9760;</span>
+      </div>
+    </div>
+
+    <div id="win-modal" class="modal">
+      <div class="modal-content">
+        Congratulations! You Win!
+      </div>
+    </div>
+
+    <div id="main">
+    </div>
+
+
+    <script src="https://fb.me/react-15.1.0.min.js"></script>
+    <script src="https://fb.me/react-dom-0.14.2.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/keymaster/1.6.1/keymaster.min.js"></script>
+
+    <script>
+      'use strict';
+
+      var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+      var dungeonWidth = 70;
+      var dungeonHeight = 46;
+      var dungeon = [];
+      var rooms = [];
+
+      function initDungeon() {
+        dungeon = [];
+        for (var i = 0; i < dungeonHeight; i++) {
+          var dungeonRow = [];
+          for (var j = 0; j < dungeonWidth; j++) {
+            dungeonRow.push(0);
+          }
+          dungeon.push(dungeonRow);
+        }
+        return dungeon;
+      };
+
+      var Room = function Room(x, y, w, h) {
+        this.x1 = x;
+        this.x2 = x + w;
+        this.y1 = y;
+        this.y2 = y + h;
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.center = { 'x': Math.floor((2 * x + w) / 2),
+          'y': Math.floor((2 * y + h) / 2) };
+      };
+
+      Room.prototype.intersects = function (room) {
+        return this.x1 <= room.x2 && this.x2 >= room.x1 && this.y1 <= room.y2 && this.y2 >= room.y1;
+      };
+
+      function createRoom(newRoom) {
+        for (var i = newRoom.y1; i < newRoom.y2; i++) {
+          for (var j = newRoom.x1; j < newRoom.x2; j++) {
+            dungeon[i][j] = 1;
+          }
+        }
+      }
+
+      function hCorridor(x1, x2, y) {
+        var start = Math.min(x1, x2);
+        var end = Math.max(x1, x2);
+
+        for (var x = start; x < end + 1; x++) {
+          dungeon[y][x] = 1;
+        }
+      }
+
+      function vCorridor(y1, y2, x) {
+        var start = Math.min(y1, y2);
+        var end = Math.max(y1, y2);
+
+        for (var y = start; y < end + 1; y++) {
+          dungeon[y][x] = 1;
+        }
+      }
+
+      function isOccupied(y, x) {
+        return dungeon[y][x] != 1 && dungeon[y][x] != 0;
+      }
+
+      function placePlayer() {
+        var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+        dungeon[startRoom.center['y']][startRoom.center['x']] = 'player';
+        return [startRoom.center['y'], startRoom.center['x']];
+      }
+
+      function placeTeleport() {
+        var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+        while (isOccupied(startRoom.center['y'], startRoom.center['x']) === true) {
+          var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+        }
+        dungeon[startRoom.center['y']][startRoom.center['x']] = 'teleport';
+      }
+
+      function placeHealths() {
+        for (var i = 0; i < 5; i++) {
+          var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+          if (Math.random() < 0.5) {
+            var randYdelta = Math.floor(Math.random() * -4);
+          } else {
+            var randYdelta = Math.floor(Math.random() * 4);
+          }
+          if (Math.random() < 0.5) {
+            var randXdelta = Math.floor(Math.random() * -4);
+          } else {
+            var randXdelta = Math.floor(Math.random() * 4);
+          }
+          while (isOccupied(startRoom.center['y'] + randYdelta, startRoom.center['x'] + randXdelta) === true) {
+            var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+            if (Math.random() < 0.5) {
+              var randYdelta = Math.floor(Math.random() * -4);
+            } else {
+              var randYdelta = Math.floor(Math.random() * 4);
+            }
+            if (Math.random() < 0.5) {
+              var randXdelta = Math.floor(Math.random() * -4);
+            } else {
+              var randXdelta = Math.floor(Math.random() * 4);
+            }
+          }
+          dungeon[startRoom.center['y'] + randYdelta][startRoom.center['x'] + randXdelta] = 'health';
+        }
+      }
+
+      function placeEnemies(level) {
+        if (level === 4) {
+          var enemies = 4;
+        } else {
+          var enemies = 5;
+        }
+        for (var i = 0; i < enemies; i++) {
+          var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+          if (Math.random() < 0.5) {
+            var randYdelta = Math.floor(Math.random() * -4);
+          } else {
+            var randYdelta = Math.floor(Math.random() * 4);
+          }
+          if (Math.random() < 0.5) {
+            var randXdelta = Math.floor(Math.random() * -4);
+          } else {
+            var randXdelta = Math.floor(Math.random() * 4);
+          }
+          while (isOccupied(startRoom.center['y'] + randYdelta, startRoom.center['x'] + randXdelta) === true) {
+            var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+            if (Math.random() < 0.5) {
+              var randYdelta = Math.floor(Math.random() * -4);
+            } else {
+              var randYdelta = Math.floor(Math.random() * 4);
+            }
+            if (Math.random() < 0.5) {
+              var randXdelta = Math.floor(Math.random() * -4);
+            } else {
+              var randXdelta = Math.floor(Math.random() * 4);
+            }
+          }
+          dungeon[startRoom.center['y'] + randYdelta][startRoom.center['x'] + randXdelta] = { 'health': 50 * (level + 1), 'attack': 7 * (level * 2 + 1), 'boss': false };
+        }
+      }
+
+      function placeWeapon() {
+        var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+        while (isOccupied(startRoom.center['y'], startRoom.center['x']) === true) {
+          var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+        }
+        dungeon[startRoom.center['y']][startRoom.center['x']] = 'weapon';
+      }
+
+      function placeBoss() {
+        var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+        while (isOccupied(startRoom.center['y'], startRoom.center['x']) === true) {
+          var startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+        }
+        dungeon[startRoom.center['y']][startRoom.center['x']] = { "health": 500, "attack": 100, "boss": true };
+      }
+
+      function placeRooms() {
+        // create array for room storage for easy access
+        var maxRooms = dungeonWidth * dungeonHeight;
+        var minRoomSize = 8;
+        var maxRoomSize = 13;
+        var newCenter = null;
+        rooms = [];
+
+        // randomize values for each room
+        for (var i = 0; i < maxRooms; i++) {
+          var w = minRoomSize + Math.floor(Math.random() * (maxRoomSize - minRoomSize + 1));
+          var h = minRoomSize + Math.floor(Math.random() * (maxRoomSize - minRoomSize + 1));
+          var x = Math.floor((dungeonWidth - w - 1) * Math.random()) + 1;
+          var y = Math.floor((dungeonHeight - h - 1) * Math.random()) + 1;
+
+          // create room with randomized values
+          var newRoom = new Room(x, y, w, h);
+
+          var failed = false;
+          for (var j = 0; j < rooms.length; j++) {
+            if (newRoom.intersects(rooms[j])) {
+              failed = true;
+              break;
+            }
+          }
+          if (!failed) {
+            // local function to carve out new room
+            createRoom(newRoom);
+
+            // store center for new room
+            newCenter = newRoom.center;
+
+            if (rooms.length != 0) {
+              // store center of previous room
+              var prevCenter = rooms[rooms.length - 1].center;
+
+              // carve out corridors between rooms based on centers
+              // randomly start with horizontal or vertical corridors
+              hCorridor(prevCenter['x'], newCenter['x'], prevCenter['y']);
+              vCorridor(prevCenter['y'], newCenter['y'], newCenter['x']);
+            }
+
+            // push new room into rooms array
+            rooms.push(newRoom);
+          }
+        }
+      }
+
+      function withinDistance(distance, r1, c1, r2, c2) {
+        var rowDist = Math.abs(r1 - r2);
+        var colDist = Math.abs(c1 - c2);
+        var dist = Math.sqrt(Math.pow(rowDist, 2) + Math.pow(colDist, 2));
+        if (dist <= distance) {
+          return true;
+        }
+      }
+
+      $('document').ready(function () {
+        ReactDOM.render(React.createElement(Game, null), document.getElementById('main'));
+      });
+
+      var Game = React.createClass({
+        displayName: 'Game',
+
+        getInitialState: function getInitialState() {
+          initDungeon();
+          placeRooms();
+          var pos = placePlayer();
+          placeTeleport();
+          placeHealths();
+          placeWeapon();
+          placeEnemies(0);
+          return { gameDungeon: dungeon, playerPos: pos, dungeonNum: 0, health: 100, weapon: "stick", attack: 7, level: 0, nextLevel: 50, light: "off" };
+        },
+        newDungeon: function newDungeon() {
+          initDungeon();
+          placeRooms();
+          var pos = placePlayer();
+          if (this.state.dungeonNum < 3) {
+            placeTeleport();
+          }
+          placeHealths();
+          placeWeapon();
+          placeEnemies(this.state.dungeonNum);
+          if (this.state.dungeonNum === 3) {
+            placeBoss();
+          }
+          this.setState({ gameDungeon: dungeon, playerPos: pos, dungeonNum: this.state.dungeonNum + 1 });
+        },
+        movePlayer: function movePlayer(dir) {
+          var oldPos = this.state.playerPos;
+          if (dir === "left") {
+            var newPos = [oldPos[0], oldPos[1] - 1];
+          } else if (dir === "up") {
+            var newPos = [oldPos[0] - 1, oldPos[1]];
+          } else if (dir === "right") {
+            var newPos = [oldPos[0], oldPos[1] + 1];
+          } else if (dir === "down") {
+            var newPos = [oldPos[0] + 1, oldPos[1]];
+          }
+          if (dungeon[newPos[0]][newPos[1]] === 1) {
+            dungeon[oldPos[0]][oldPos[1]] = 1;
+            dungeon[newPos[0]][newPos[1]] = "player";
+            this.setState({ playerPos: newPos });
+          } else if (dungeon[newPos[0]][newPos[1]] === "teleport") {
+            this.newDungeon();
+          } else if (dungeon[newPos[0]][newPos[1]] === "health") {
+            dungeon[oldPos[0]][oldPos[1]] = 1;
+            dungeon[newPos[0]][newPos[1]] = "player";
+            this.setState({ playerPos: newPos, health: this.state.health + 20 });
+          } else if (dungeon[newPos[0]][newPos[1]] === "weapon") {
+            dungeon[oldPos[0]][oldPos[1]] = 1;
+            dungeon[newPos[0]][newPos[1]] = "player";
+            var dungeonLevel = this.state.dungeonNum;
+            if (dungeonLevel === 0) {
+              this.setState({ weapon: "brass knuckles", attack: this.state.attack + 7 });
+            } else if (dungeonLevel === 1) {
+              this.setState({ weapon: "serrated dagger", attack: this.state.attack + 12 });
+            } else if (dungeonLevel === 2) {
+              this.setState({ weapon: "katana", attack: this.state.attack + 16 });
+            } else if (dungeonLevel === 3) {
+              this.setState({ weapon: "reaper's scythe", attack: this.state.attack + 22 });
+            } else if (dungeonLevel === 4) {
+              this.setState({ weapon: "large trout", attack: this.state.attack + 30 });
+            }
+            this.setState({ playerPos: newPos });
+          } else if (_typeof(dungeon[newPos[0]][newPos[1]]) === "object") {
+            var rand = Math.floor(Math.random() * 5);
+            dungeon[newPos[0]][newPos[1]]['health'] -= this.state.attack + rand;
+            if (dungeon[newPos[0]][newPos[1]]['health'] <= 0) {
+              if (dungeon[newPos[0]][newPos[1]]['boss'] === true) {
+                var winModal = document.getElementById('win-modal');
+                winModal.style.display = "block";
+                initDungeon();
+                placeRooms();
+                var pos = placePlayer();
+                placeTeleport();
+                placeHealths();
+                placeWeapon();
+                placeEnemies(0);
+                this.setState({ gameDungeon: dungeon, playerPos: pos, dungeonNum: 0, health: 100, weapon: "stick", attack: 7, level: 0, nextLevel: 50 });
+                setTimeout(function () {
+                  winModal.style.display = "none";
+                }, 3000);
+              } else {
+                dungeon[oldPos[0]][oldPos[1]] = 1;
+                dungeon[newPos[0]][newPos[1]] = "player";
+                this.setState({ playerPos: newPos });
+                var newLevelVal = this.state.nextLevel - (this.state.dungeonNum + 1) * 10;
+                if (newLevelVal <= 0) {
+                  this.setState({ level: this.state.level + 1, nextLevel: 5 * ((this.state.level + 2) * 10), attack: this.state.attack + 12 * (this.state.level + 1) });
+                } else {
+                  this.setState({ nextLevel: newLevelVal });
+                }
+              }
+            } else {
+              var newHealth = this.state.health - (dungeon[newPos[0]][newPos[1]]['attack'] + rand);
+              if (newHealth <= 0) {
+                var loseModal = document.getElementById('lose-modal');
+                loseModal.style.display = "block";
+                initDungeon();
+                placeRooms();
+                var pos = placePlayer();
+                placeTeleport();
+                placeHealths();
+                placeWeapon();
+                placeEnemies(0);
+                this.setState({ gameDungeon: dungeon, playerPos: pos, dungeonNum: 0, health: 100, weapon: "stick", attack: 7, level: 0, nextLevel: 50 });
+                setTimeout(function () {
+                  loseModal.style.display = "none";
+                }, 3000);
+              } else {
+                this.setState({ health: newHealth });
+              }
+            }
+          }
+        },
+        componentDidMount: function componentDidMount() {
+          var that = this;
+          key('left', function () {
+            that.movePlayer('left');
+          });
+          key('up', function () {
+            that.movePlayer('up');
+          });
+          key('right', function () {
+            that.movePlayer('right');
+          });
+          key('down', function () {
+            that.movePlayer('down');
+          });
+        },
+        toggleDarkness: function toggleDarkness() {
+          var state = this.state.light;
+          if (state === "off") {
+            this.setState({ light: "on" });
+          } else {
+            this.setState({ light: "off" });
+          }
+        },
+        render: function render() {
+          var that = this;
+          return React.createElement(
+            'div',
+            null,
+            React.createElement(
+              'div',
+              { id: 'info' },
+              React.createElement(
+                'span',
+                { id: 'health' },
+                'health: ',
+                React.createElement(
+                  'span',
+                  { className: 'vals' },
+                  this.state.health
+                )
+              ),
+              React.createElement(
+                'span',
+                null,
+                'weapon: ',
+                React.createElement(
+                  'span',
+                  { className: 'vals' },
+                  this.state.weapon
+                )
+              ),
+              React.createElement(
+                'span',
+                null,
+                'attack: ',
+                React.createElement(
+                  'span',
+                  { className: 'vals' },
+                  this.state.attack
+                )
+              ),
+              React.createElement(
+                'span',
+                null,
+                React.createElement(
+                  'button',
+                  { id: 'dark', className: 'btn', onClick: this.toggleDarkness },
+                  'Toggle Darkness'
+                )
+              ),
+              React.createElement(
+                'span',
+                null,
+                'level: ',
+                React.createElement(
+                  'span',
+                  { className: 'vals' },
+                  this.state.level
+                )
+              ),
+              React.createElement(
+                'span',
+                null,
+                'next level: ',
+                React.createElement(
+                  'span',
+                  { className: 'vals' },
+                  this.state.nextLevel,
+                  ' XP'
+                )
+              ),
+              React.createElement(
+                'span',
+                null,
+                'dungeon: ',
+                React.createElement(
+                  'span',
+                  { className: 'vals' },
+                  this.state.dungeonNum
+                )
+              )
+            ),
+            React.createElement(
+              'div',
+              { id: 'game-content' },
+              this.state.gameDungeon.map(function (row, i) {
+                return React.createElement(
+                  'div',
+                  { className: 'row' },
+                  row.map(function (tile, j) {
+                    var playerRow = that.state.playerPos[0];
+                    var playerCol = that.state.playerPos[1];
+                    if (withinDistance(9, i, j, playerRow, playerCol) || that.state.light === "on") {
+                      if (tile === 0) {
+                        return React.createElement('div', { className: 'tile tile0' });
+                      } else if (tile === 1) {
+                        return React.createElement('div', { className: 'tile tile1' });
+                      } else if (tile === "player") {
+                        return React.createElement('div', { className: 'tile tile2' });
+                      } else if (tile === "teleport") {
+                        return React.createElement('div', { className: 'tile tile3' });
+                      } else if (tile === "health") {
+                        return React.createElement('div', { className: 'tile tile4' });
+                      } else if (tile === "weapon") {
+                        return React.createElement('div', { className: 'tile tile5' });
+                      } else if (typeof tile !== "string" && tile['boss'] !== true) {
+                        return React.createElement('div', { className: 'tile tile6' });
+                      } else {
+                        return React.createElement('div', { className: 'tile tile7' });
+                      }
+                    } else {
+                      return React.createElement('div', { className: 'tile' });
+                    }
+                  })
+                );
+              })
+            )
+          );
+        }
+      });
+
+      var modal = document.getElementById('myModal');
+
+      $('button').on("click", function () {
+        modal.style.display = "none";
+      });
+    </script>
+  </body>
+</html>
